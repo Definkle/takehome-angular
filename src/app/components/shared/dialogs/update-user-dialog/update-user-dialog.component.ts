@@ -12,7 +12,6 @@ import { MatInput } from '@angular/material/input';
 import { User } from '../../../../services/models/user.model';
 import { UserDataService } from '../../../../services/state/user/user-data.service';
 import { FormValidator } from '../../../../utils/validators/form-validators';
-import { UpdateUserComponent } from '../../../user/update-user/update-user.component';
 import { UserFormComponent } from '../../forms/user-form/user-form.component';
 import { DialogLayoutComponent } from '../dialog-layout/dialog-layout.component';
 
@@ -27,7 +26,6 @@ import { DialogLayoutComponent } from '../dialog-layout/dialog-layout.component'
     MatInput,
     MatLabel,
     ReactiveFormsModule,
-    UpdateUserComponent,
     UserFormComponent,
   ],
   templateUrl: './update-user-dialog.component.html',
