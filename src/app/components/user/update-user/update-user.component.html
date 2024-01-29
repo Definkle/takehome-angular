@@ -1,0 +1,25 @@
+<form [formGroup]="userForm">
+  @if (userForm.hasError('userAlreadyExists')) {
+    <mat-error>{{ FORM_ERROR_MESSAGES.userAlreadyExists }}</mat-error>
+  }
+
+  <mat-form-field>
+    <mat-label>First Name</mat-label>
+    <input type="text" matInput formControlName="firstName" placeholder="John">
+    @if (userForm.get('firstName')?.hasError('required')) {
+      <mat-error>{{ FORM_ERROR_MESSAGES.firstNameRequired }}</mat-error>
+    }
+  </mat-form-field>
+
+  <mat-form-field>
+    <mat-label>Last Name</mat-label>
+    <input type="text" matInput formControlName="lastName" placeholder="Cena">
+    @if (userForm.get('lastName')?.hasError('required')) {
+      <mat-error>{{ FORM_ERROR_MESSAGES.lastNameRequired }}</mat-error>
+    }
+  </mat-form-field>
+
+  <button mat-raised-button color="primary" type="submit" (click)="updateUser()" [disabled]="userForm.invalid">
+    {{ submitButtonLabel }}
+  </button>
+</form>
