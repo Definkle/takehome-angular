@@ -154,9 +154,7 @@ export class UsersTableComponent implements OnInit, AfterViewInit {
       .pipe(
         switchMap((wasConfirmedToDelete) => {
           if (wasConfirmedToDelete) {
-            this.store.dispatch(
-              deleteUser({ idNumber: userToDelete.idNumber }),
-            );
+            this.store.dispatch(deleteUser({ userToDelete: userToDelete }));
           }
 
           return wasConfirmedToDelete

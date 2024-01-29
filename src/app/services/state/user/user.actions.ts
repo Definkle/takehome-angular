@@ -8,5 +8,5 @@ export const updateUser = createAction(
 );
 export const deleteUser = createAction(
   '[User] Delete User',
-  props<{ idNumber: number }>(),
+  props<{ userToDelete: User }>(),
 );
