@@ -1,6 +1,10 @@
-import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
+import { Injectable } from '@angular/core';
+import { AbstractControl, AsyncValidatorFn } from '@angular/forms';
+import { select, Store } from '@ngrx/store';
+import { map, of, take } from 'rxjs';
 import { User } from '../../services/models/user.model';
-import { getUsersFromStorage } from '../../services/state/user/user-data.store';
+import { UserState } from '../../services/state/user/user.reducer';
+import { selectAllUsers } from '../../services/state/user/user.selectors';
 
 interface MatchingUserPayload {
   existingUsers: User[];
@@ -9,27 +13,34 @@ interface MatchingUserPayload {
   idNumber?: number;
 }
 
+@Injectable({
+  providedIn: 'root',
+})
 export class FormValidator {
-  static checkIfUserAlreadyExists(idNumber?: number): ValidatorFn {
-    return ({ value }: AbstractControl): ValidationErrors | null => {
+  constructor(private store: Store<UserState>) {}
+  checkIfUserAlreadyExists(idNumber?: number): AsyncValidatorFn {
+    return ({ value }: AbstractControl) => {
       const { firstName, lastName } = value;
       if (!firstName.length || !lastName.length) {
-        return null;
+        return of(null);
       }
-      const existingUsers: User[] = getUsersFromStorage();
-
-      let matchingUser = FormValidator._getMatchingUser({
-        existingUsers,
-        firstName,
-        lastName,
-        idNumber,
-      });
-
-      return matchingUser ? { userAlreadyExists: true } : null;
+      return this.store.pipe(
+        select(selectAllUsers),
+        map((existingUsers) => {
+          let matchingUser = this._getMatchingUser({
+            existingUsers,
+            firstName,
+            lastName,
+            idNumber,
+          });
+          return matchingUser ? { userAlreadyExists: true } : null;
+        }),
+        take(1),
+      );
     };
   }
 
-  private static _getMatchingUser({
+  private _getMatchingUser({
     existingUsers,
     firstName,
     lastName,

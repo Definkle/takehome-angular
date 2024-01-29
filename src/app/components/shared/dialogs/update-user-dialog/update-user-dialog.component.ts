@@ -9,10 +9,11 @@ import { MatButton } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatError, MatFormField, MatLabel } from '@angular/material/form-field';
 import { MatInput } from '@angular/material/input';
+import { Store } from '@ngrx/store';
 import { User } from '../../../../services/models/user.model';
-import { UserDataService } from '../../../../services/state/user/user-data.service';
+import { updateUser } from '../../../../services/state/user/user.actions';
+import { UserState } from '../../../../services/state/user/user.reducer';
 import { FormValidator } from '../../../../utils/validators/form-validators';
-import { UpdateUserComponent } from '../../../user/update-user/update-user.component';
 import { UserFormComponent } from '../../forms/user-form/user-form.component';
 import { DialogLayoutComponent } from '../dialog-layout/dialog-layout.component';
 
@@ -27,7 +28,6 @@ import { DialogLayoutComponent } from '../dialog-layout/dialog-layout.component'
     MatInput,
     MatLabel,
     ReactiveFormsModule,
-    UpdateUserComponent,
     UserFormComponent,
   ],
   templateUrl: './update-user-dialog.component.html',
@@ -43,7 +43,8 @@ export class UpdateUserDialogComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public data: { userToUpdate: User },
     public dialog: MatDialogRef<UpdateUserDialogComponent>,
     private formBuilder: NonNullableFormBuilder,
-    private userDataService: UserDataService,
+    private formValidators: FormValidator,
+    private store: Store<UserState>,
   ) {}
 
   ngOnInit(): void {
@@ -62,13 +63,17 @@ export class UpdateUserDialogComponent implements OnInit {
         ),
       },
       {
-        validators: [FormValidator.checkIfUserAlreadyExists(idNumber)],
+        asyncValidators: [
+          this.formValidators.checkIfUserAlreadyExists(idNumber),
+        ],
       },
     );
   }
 
   updateUser(): void {
-    this.userDataService.updateUser(this.userForm.getRawValue());
+    this.store.dispatch(
+      updateUser({ updatedUser: this.userForm.getRawValue() }),
+    );
     this.dialog.close(this.userForm.getRawValue());
   }
 }

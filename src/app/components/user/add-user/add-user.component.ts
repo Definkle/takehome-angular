@@ -11,7 +11,9 @@ import { MatDialogClose } from '@angular/material/dialog';
 import { MatLabel } from '@angular/material/form-field';
 import { MatError, MatFormField, MatInput } from '@angular/material/input';
 import { ActivatedRoute } from '@angular/router';
-import { UserDataService } from '../../../services/state/user/user-data.service';
+import { Store } from '@ngrx/store';
+import { addUser } from '../../../services/state/user/user.actions';
+import { UserState } from '../../../services/state/user/user.reducer';
 import { FormValidator } from '../../../utils/validators/form-validators';
 import { UserFormComponent } from '../../shared/forms/user-form/user-form.component';
 
@@ -39,7 +41,8 @@ export class AddUserComponent implements OnInit {
 
   constructor(
     private formBuilder: NonNullableFormBuilder,
-    private userDataService: UserDataService,
+    private formValidators: FormValidator,
+    private store: Store<UserState>,
     private route: ActivatedRoute,
   ) {}
 
@@ -50,13 +53,13 @@ export class AddUserComponent implements OnInit {
         lastName: this.formBuilder.control<string>('', Validators.required),
       },
       {
-        validators: [FormValidator.checkIfUserAlreadyExists()],
+        asyncValidators: [this.formValidators.checkIfUserAlreadyExists()],
       },
     );
   }
 
   addUser(): void {
-    this.userDataService.addUser(this.userForm.getRawValue());
+    this.store.dispatch(addUser({ user: this.userForm.getRawValue() }));
     this.userForm.reset();
 
     // Emits only when inside a dialog

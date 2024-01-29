@@ -1,10 +1,4 @@
-import {
-  AfterViewInit,
-  Component,
-  Input,
-  OnInit,
-  ViewChild,
-} from '@angular/core';
+import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
 import { MatIconButton, MatMiniFabButton } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatFormField, MatLabel } from '@angular/material/form-field';
@@ -26,9 +20,12 @@ import {
   MatTable,
   MatTableDataSource,
 } from '@angular/material/table';
-import { take, tap } from 'rxjs';
+import { select, Store } from '@ngrx/store';
+import { map, of, switchMap, take } from 'rxjs';
 import { User, UserData } from '../../../../services/models/user.model';
-import { UserDataService } from '../../../../services/state/user/user-data.service';
+import { deleteUser } from '../../../../services/state/user/user.actions';
+import { UserState } from '../../../../services/state/user/user.reducer';
+import { selectAllUsers } from '../../../../services/state/user/user.selectors';
 import { AddUserDialogComponent } from '../../../shared/dialogs/add-user-dialog/add-user-dialog.component';
 import { DeleteConfirmationComponent } from '../../../shared/dialogs/delete-confirmation/delete-confirmation.component';
 import { UpdateUserDialogComponent } from '../../../shared/dialogs/update-user-dialog/update-user-dialog.component';
@@ -62,7 +59,6 @@ import { UpdateUserDialogComponent } from '../../../shared/dialogs/update-user-d
   styleUrl: './users-table.component.scss',
 })
 export class UsersTableComponent implements OnInit, AfterViewInit {
-  @Input() users!: User[];
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
   dataSource!: MatTableDataSource<UserData>;
@@ -72,15 +68,18 @@ export class UsersTableComponent implements OnInit, AfterViewInit {
     'lastName',
     'actions',
   ];
+  users!: User[];
 
   constructor(
     private dialog: MatDialog,
-    private userDataService: UserDataService,
+    private store: Store<UserState>,
   ) {}
 
   ngOnInit(): void {
-    this.users = this.userDataService.listUsers();
-    this.dataSource = new MatTableDataSource(this._getUserData(this.users));
+    this.store.pipe(select(selectAllUsers), take(1)).subscribe((users) => {
+      this.users = users;
+      this.dataSource = new MatTableDataSource(this._getUserData(this.users));
+    });
   }
 
   ngAfterViewInit() {
@@ -103,11 +102,15 @@ export class UsersTableComponent implements OnInit, AfterViewInit {
     dialogRef
       .afterClosed()
       .pipe(
-        tap((addedAUser) => {
-          if (addedAUser) {
-            const updatedUsers = this.userDataService.listUsers();
-            this._updateDataSource(this._getUserData(updatedUsers));
-          }
+        switchMap((addedAUser) => {
+          return addedAUser
+            ? this.store.pipe(
+                select(selectAllUsers),
+                map((users) => {
+                  return this._updateDataSource(this._getUserData(users));
+                }),
+              )
+            : of([]);
         }),
         take(1),
       )
@@ -124,16 +127,15 @@ export class UsersTableComponent implements OnInit, AfterViewInit {
     dialogRef
       .afterClosed()
       .pipe(
-        tap((updatedUser) => {
-          if (updatedUser) {
-            this._updateDataSource(
-              this.dataSource.data.map((user) => {
-                return user.idNumber === updatedUser.idNumber
-                  ? this._buildUserData(updatedUser)
-                  : user;
-              }),
-            );
-          }
+        switchMap((updatedUser) => {
+          return updatedUser
+            ? this.store.pipe(
+                select(selectAllUsers),
+                map((users) => {
+                  return this._updateDataSource(this._getUserData(users));
+                }),
+              )
+            : of([]);
         }),
         take(1),
       )
@@ -150,24 +152,28 @@ export class UsersTableComponent implements OnInit, AfterViewInit {
     dialogRef
       .afterClosed()
       .pipe(
-        tap((wasConfirmedToDelete) => {
+        switchMap((wasConfirmedToDelete) => {
           if (wasConfirmedToDelete) {
-            const idToDelete = userToDelete.idNumber;
-            this.userDataService.deleteUser(idToDelete);
-
-            const updatedDataSource = this.dataSource.data.filter(
-              (user) => user.idNumber !== idToDelete,
+            this.store.dispatch(
+              deleteUser({ idNumber: userToDelete.idNumber }),
             );
-
-            this._updateDataSource(updatedDataSource);
           }
+
+          return wasConfirmedToDelete
+            ? this.store.pipe(
+                select(selectAllUsers),
+                map((users) => {
+                  return this._updateDataSource(this._getUserData(users));
+                }),
+              )
+            : of([]);
         }),
         take(1),
       )
       .subscribe();
   }
 
-  private _getUserData(users: User[]): UserData[] {
+  private _getUserData(users: User[] = []): UserData[] {
     return users.map((user) => this._buildUserData(user));
   }
 
