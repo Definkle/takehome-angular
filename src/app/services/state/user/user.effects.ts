@@ -1,66 +1,65 @@
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { Store } from '@ngrx/store';
-import { exhaustMap, map, tap } from 'rxjs';
+import { exhaustMap, of } from 'rxjs';
 import { User } from '../../models/user.model';
-import { addUser, deleteUser, initUsers, updateUser } from './user.actions';
-import { UserState } from './user.reducer';
-import { selectPreviousId } from './user.selectors';
+import {
+  addUser,
+  addUserSuccess,
+  deleteUser,
+  deleteUserSuccess,
+  loadUsers,
+  loadUsersSuccess,
+  updateUser,
+  updateUserSuccess,
+} from './user.actions';
 import { UserService } from './user.service';
 
 @Injectable({ providedIn: 'root' })
 export class UserEffects {
-  initUsers$ = createEffect(
-    () =>
-      this.actions$.pipe(
-        ofType(initUsers),
-        exhaustMap(() => this.userService.getUsers()),
-      ),
-    { dispatch: false },
+  loadUsers$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(loadUsers),
+      exhaustMap(() => {
+        const users = this.userService.getUsers();
+        const lastUser: User | undefined = [...users].pop();
+        const previousId = lastUser?.idNumber ?? 0;
+        return of(loadUsersSuccess({ users, previousId }));
+      }),
+    ),
   );
 
-  addUser$ = createEffect(
-    () =>
-      this.actions$.pipe(
-        ofType(addUser),
-        exhaustMap(({ user }) => {
-          console.log('effects');
-          console.log(user);
-          return this.store
-            .select(selectPreviousId)
-            .pipe(map((previousId) => [previousId, user]));
-        }),
-        tap(([previousId, user]) =>
-          this.userService.addUser({
-            ...(user as User),
-            idNumber: +previousId,
-          }),
-        ),
-      ),
-    { dispatch: false },
+  addUser$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(addUser),
+      exhaustMap(({ user }) => {
+        this.userService.addUser(user);
+        return of(addUserSuccess({ user }));
+      }),
+    ),
   );
 
-  updateUser$ = createEffect(
-    () =>
-      this.actions$.pipe(
-        ofType(updateUser),
-        tap(({ updatedUser }) => this.userService.updateUser(updatedUser)),
-      ),
-    { dispatch: false },
+  updateUser$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(updateUser),
+      exhaustMap(({ updatedUser }) => {
+        this.userService.updateUser(updatedUser);
+        return of(updateUserSuccess({ updatedUser }));
+      }),
+    ),
   );
 
-  deleteUser$ = createEffect(
-    () =>
-      this.actions$.pipe(
-        ofType(deleteUser),
-        tap(({ userToDelete }) => this.userService.deleteUser(userToDelete)),
-      ),
-    { dispatch: false },
+  deleteUser$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(deleteUser),
+      exhaustMap(({ idNumber }) => {
+        this.userService.deleteUser(idNumber);
+        return of(deleteUserSuccess({ idNumber }));
+      }),
+    ),
   );
 
   constructor(
     private actions$: Actions,
-    private store: Store<UserState>,
     private userService: UserService,
   ) {}
 }

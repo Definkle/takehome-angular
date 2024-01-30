@@ -68,7 +68,6 @@ export class UsersTableComponent implements OnInit, AfterViewInit {
     'lastName',
     'actions',
   ];
-  users!: User[];
 
   constructor(
     private dialog: MatDialog,
@@ -77,8 +76,7 @@ export class UsersTableComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.store.pipe(select(selectAllUsers), take(1)).subscribe((users) => {
-      this.users = users;
-      this.dataSource = new MatTableDataSource(this._getUserData(this.users));
+      this.dataSource = new MatTableDataSource(this._getUserData(users));
     });
   }
 
@@ -154,7 +152,9 @@ export class UsersTableComponent implements OnInit, AfterViewInit {
       .pipe(
         switchMap((wasConfirmedToDelete) => {
           if (wasConfirmedToDelete) {
-            this.store.dispatch(deleteUser({ userToDelete: userToDelete }));
+            this.store.dispatch(
+              deleteUser({ idNumber: userToDelete.idNumber }),
+            );
           }
 
           return wasConfirmedToDelete

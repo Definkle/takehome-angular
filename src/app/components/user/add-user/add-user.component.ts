@@ -1,3 +1,4 @@
+import { AsyncPipe } from '@angular/common';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import {
   FormGroup,
@@ -12,8 +13,10 @@ import { MatLabel } from '@angular/material/form-field';
 import { MatError, MatFormField, MatInput } from '@angular/material/input';
 import { ActivatedRoute } from '@angular/router';
 import { Store } from '@ngrx/store';
+import { Observable, tap } from 'rxjs';
 import { addUser } from '../../../services/state/user/user.actions';
 import { UserState } from '../../../services/state/user/user.reducer';
+import { selectPreviousId } from '../../../services/state/user/user.selectors';
 import { FormValidator } from '../../../utils/validators/form-validators';
 import { UserFormComponent } from '../../shared/forms/user-form/user-form.component';
 
@@ -30,6 +33,7 @@ import { UserFormComponent } from '../../shared/forms/user-form/user-form.compon
     MatButton,
     MatDialogClose,
     UserFormComponent,
+    AsyncPipe,
   ],
   templateUrl: './add-user.component.html',
   styleUrl: './add-user.component.scss',
@@ -38,6 +42,7 @@ export class AddUserComponent implements OnInit {
   @Input() submitButtonLabel = 'Add';
   @Output() addedAUser = new EventEmitter();
   userForm!: FormGroup;
+  selectPreviousId$!: Observable<number>;
 
   constructor(
     private formBuilder: NonNullableFormBuilder,
@@ -47,14 +52,22 @@ export class AddUserComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.userForm = this.formBuilder.group(
-      {
-        firstName: this.formBuilder.control<string>('', Validators.required),
-        lastName: this.formBuilder.control<string>('', Validators.required),
-      },
-      {
-        asyncValidators: [this.formValidators.checkIfUserAlreadyExists()],
-      },
+    this.selectPreviousId$ = this.store.select(selectPreviousId).pipe(
+      tap((previousId) => {
+        this.userForm = this.formBuilder.group(
+          {
+            idNumber: this.formBuilder.control<number>(previousId + 1),
+            firstName: this.formBuilder.control<string>(
+              '',
+              Validators.required,
+            ),
+            lastName: this.formBuilder.control<string>('', Validators.required),
+          },
+          {
+            asyncValidators: [this.formValidators.checkIfUserAlreadyExists()],
+          },
+        );
+      }),
     );
   }
 
