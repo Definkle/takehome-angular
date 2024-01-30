@@ -1,7 +1,12 @@
 import { Routes } from '@angular/router';
+import { userResolver } from './utils/resolvers/user.resolver';
 
 export const routes: Routes = [
-  { path: '', redirectTo: '/list', pathMatch: 'full' },
+  {
+    path: '',
+    redirectTo: '/list',
+    pathMatch: 'full',
+  },
   {
     path: 'list',
     title: 'List Users',
@@ -9,6 +14,7 @@ export const routes: Routes = [
       import('./components/user/list-users/list-users.component').then(
         (m) => m.ListUsersComponent,
       ),
+    resolve: { data: userResolver },
   },
   {
     path: 'add',
@@ -17,6 +23,7 @@ export const routes: Routes = [
       import('./components/user/add-user/add-user.component').then(
         (m) => m.AddUserComponent,
       ),
+    resolve: { data: userResolver },
   },
   {
     path: '**',

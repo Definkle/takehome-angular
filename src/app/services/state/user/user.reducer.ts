@@ -1,6 +1,6 @@
 import { createReducer, on } from '@ngrx/store';
 import { User } from '../../models/user.model';
-import { addUser, deleteUser, updateUser } from './user.actions';
+import { addUser, deleteUser, initUsers, updateUser } from './user.actions';
 
 export interface UserState {
   users: User[];
@@ -13,16 +13,19 @@ export const initialState: UserState = {
 
 export const userReducer = createReducer(
   initialState,
+  on(initUsers, (state, { users }) => {
+    const lastUser: User | undefined = [...users].pop();
+    return { ...state, users, previousId: lastUser?.idNumber ?? 0 };
+  }),
   on(addUser, (state, { user }) => {
     const lastUser: User | undefined = [...state.users].pop();
     const newId = (lastUser?.idNumber ?? 0) + 1;
-    const users = [
-      ...state.users,
-      {
-        ...user,
-        idNumber: newId,
-      },
-    ];
+    const newUser = {
+      ...user,
+      idNumber: newId,
+    };
+    const users = [...state.users, newUser];
+    console.log(newUser);
     return { ...state, users, previousId: newId };
   }),
   on(updateUser, (state, { updatedUser }) => {

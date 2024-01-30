@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Observable, of } from 'rxjs';
 import { User } from '../../models/user.model';
 
 @Injectable({
@@ -7,7 +8,12 @@ import { User } from '../../models/user.model';
 export class UserService {
   constructor() {}
 
+  getUsers(): Observable<User[]> {
+    return of(this._getUsersFromStorage());
+  }
+
   addUser(newUser: User): void {
+    console.log(newUser);
     const users = this._getUsersFromStorage();
     const newUsers = [...users, newUser];
 
