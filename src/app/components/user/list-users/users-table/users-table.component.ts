@@ -1,10 +1,4 @@
-import {
-  AfterViewInit,
-  Component,
-  Input,
-  OnInit,
-  ViewChild,
-} from '@angular/core';
+import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
 import { MatIconButton, MatMiniFabButton } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatFormField, MatLabel } from '@angular/material/form-field';
@@ -62,7 +56,6 @@ import { UpdateUserDialogComponent } from '../../../shared/dialogs/update-user-d
   styleUrl: './users-table.component.scss',
 })
 export class UsersTableComponent implements OnInit, AfterViewInit {
-  @Input() users!: User[];
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
   dataSource!: MatTableDataSource<UserData>;
@@ -79,8 +72,9 @@ export class UsersTableComponent implements OnInit, AfterViewInit {
   ) {}
 
   ngOnInit(): void {
-    this.users = this.userDataService.listUsers();
-    this.dataSource = new MatTableDataSource(this._getUserData(this.users));
+    this.dataSource = new MatTableDataSource(
+      this._getUserData(this.userDataService.listUsers()),
+    );
   }
 
   ngAfterViewInit() {
