@@ -26,6 +26,15 @@ export const routes: Routes = [
     resolve: { data: userResolver },
   },
   {
+    path: 'about',
+    title: 'About',
+    loadComponent: () =>
+      import('./components/about/about.component').then(
+        (m) => m.AboutComponent,
+      ),
+    resolve: { data: userResolver },
+  },
+  {
     path: '**',
     title: 'Page not found',
     loadComponent: () =>
