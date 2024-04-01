@@ -1,0 +1,7 @@
+@if (selectPreviousId$ | async) {
+  <app-user-form
+    [userForm]="userForm"
+    [submitButtonLabel]="submitButtonLabel"
+    (triggerCrudOperation)="addUser()">
+  </app-user-form>
+}

@@ -1,0 +1,9 @@
+<mat-toolbar color="primary">
+ <div>
+   @for (route of routesData; track route.routerLink) {
+     <app-nav-button [ariaLabel]="route.ariaLabel" [matIcon]="route.matIcon" [routerLink]="route.routerLink" />
+   }
+ </div>
+
+  <app-nav-button [ariaLabel]="'about route button'" [matIcon]="'add'" [routerLink]="'about'" />
+</mat-toolbar>

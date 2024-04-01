@@ -1,0 +1,6 @@
+<app-dialog-layout [dialogTitle]="dialogTitle" [isForm]="isForm">
+  <app-user-form [userForm]="userForm"
+                 [submitButtonLabel]="submitButtonLabel"
+                 (triggerCrudOperation)="updateUser()">
+  </app-user-form>
+</app-dialog-layout>
