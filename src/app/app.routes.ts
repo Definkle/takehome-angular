@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { userResolver } from './utils/resolvers/user.resolver';
+import { userResolver } from './utils';
 
 export const routes: Routes = [
   {
