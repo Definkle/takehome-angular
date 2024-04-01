@@ -4,23 +4,19 @@ import { userResolver } from './utils/resolvers/user.resolver';
 export const routes: Routes = [
   {
     path: '',
-    loadComponent: () =>
-      import('./components/shell/shell.component').then(
-        (m) => m.ShellComponent,
-      ),
+    loadComponent: () => import('./components').then((m) => m.ShellComponent),
     resolve: { data: userResolver },
     children: [
       {
         path: '',
-        loadChildren: () =>
-          import('./components/user').then((m) => m.UserModule),
+        loadChildren: () => import('./components').then((m) => m.UserModule),
       },
 
       {
         path: 'about',
         title: 'About',
         loadComponent: () =>
-          import('./components/about').then((m) => m.AboutComponent),
+          import('./components').then((m) => m.AboutComponent),
       },
     ],
   },
@@ -28,8 +24,6 @@ export const routes: Routes = [
     path: '**',
     title: 'Page not found',
     loadComponent: () =>
-      import('./components/page-not-found/page-not-found.component').then(
-        (m) => m.PageNotFoundComponent,
-      ),
+      import('./components').then((m) => m.PageNotFoundComponent),
   },
 ];
