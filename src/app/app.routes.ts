@@ -4,35 +4,25 @@ import { userResolver } from './utils/resolvers/user.resolver';
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: '/list',
-    pathMatch: 'full',
-  },
-  {
-    path: 'list',
-    title: 'List Users',
     loadComponent: () =>
-      import('./components/user/list-users/list-users.component').then(
-        (m) => m.ListUsersComponent,
+      import('./components/shell/shell.component').then(
+        (m) => m.ShellComponent,
       ),
     resolve: { data: userResolver },
-  },
-  {
-    path: 'add',
-    title: 'Add User',
-    loadComponent: () =>
-      import('./components/user/add-user/add-user.component').then(
-        (m) => m.AddUserComponent,
-      ),
-    resolve: { data: userResolver },
-  },
-  {
-    path: 'about',
-    title: 'About',
-    loadComponent: () =>
-      import('./components/about/about.component').then(
-        (m) => m.AboutComponent,
-      ),
-    resolve: { data: userResolver },
+    children: [
+      {
+        path: '',
+        loadChildren: () =>
+          import('./components/user').then((m) => m.UserModule),
+      },
+
+      {
+        path: 'about',
+        title: 'About',
+        loadComponent: () =>
+          import('./components/about').then((m) => m.AboutComponent),
+      },
+    ],
   },
   {
     path: '**',

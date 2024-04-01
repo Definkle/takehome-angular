@@ -4,7 +4,7 @@ export const RoutesConfig: Route[] = [
   {
     ariaLabel: 'table icon',
     matIcon: 'table_chart',
-    routerLink: 'list',
+    routerLink: '',
   },
   {
     ariaLabel: 'plus icon',
